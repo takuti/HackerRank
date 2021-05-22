@@ -14,12 +14,16 @@ import sys
 #
 
 def contacts(queries):
-    names = []
+    dic = {}
     for op, val in queries:
         if op == 'add':
-            names.append(val)
+            for i in range(len(val)):
+                k = val[:(i+1)]
+                if k not in dic:
+                    dic[k] = 0
+                dic[k] += 1
         else:  # find
-            yield sum(map(lambda n: n.startswith(val), names))
+            yield 0 if val not in dic else dic[val]
 
 
 if __name__ == '__main__':
