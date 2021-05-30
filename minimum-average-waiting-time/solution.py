@@ -5,6 +5,7 @@ import os
 import random
 import re
 import sys
+from heapq import heappush, heappop
 
 #
 # Complete the 'minimumAverage' function below.
@@ -17,13 +18,16 @@ def minimumAverage(customers):
     customers = sorted(customers)
 
     t = customers[0][0]  # first customer's arrival time
-    queue = sorted([c for c in customers if c[0] == t], key=lambda c: c[::-1])
+    queue = []
+    for c in customers:
+        if c[0] == t:
+            heappush(queue, c[::-1])
     cnt = len(queue)
 
     accum_waiting = 0
 
     while len(queue) != 0:
-        c = queue.pop(0)
+        c = heappop(queue)[::-1]
 
         t += c[1]  # add time to cook
         accum_waiting += t - c[0]
@@ -32,10 +36,10 @@ def minimumAverage(customers):
             if t < customers[cnt][0] and len(queue) == 0:
                 t = customers[cnt][0]
             if t >= customers[cnt][0]:
-                new_arrival = [c for c in customers[cnt:] if c[0] <= t]
-                queue += new_arrival
-                cnt += len(new_arrival)
-                queue = sorted(queue, key=lambda c: c[::-1])
+                for c in customers[cnt:]:
+                    if c[0] <= t:
+                        heappush(queue, c[::-1])
+                        cnt += 1
 
     return accum_waiting // cnt
 
