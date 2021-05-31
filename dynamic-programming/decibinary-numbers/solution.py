@@ -14,10 +14,12 @@ import sys
 #
 
 def to_db(v):
-    digits = str(v)
     res = 0
-    for i in range(len(digits)):
-        res += int(digits[i]) * 2**(len(digits)-1-i)
+    p = 0
+    while v != 0:
+        res += (v % 10) * 2**p
+        v //= 10
+        p += 1
     return res
 
 
@@ -80,11 +82,11 @@ def to_db(v):
 
 
 size = 10**6
-dbs = sorted([(to_db(i), i) for i in range(0, size)])
+dbs = sorted(range(0, size), key=lambda i: (to_db(i), i))
 
 
 def decibinaryNumbers(x):
-    return dbs[x-1][1]
+    return dbs[x-1]
 
 
 if __name__ == '__main__':
