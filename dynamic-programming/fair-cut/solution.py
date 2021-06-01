@@ -5,7 +5,7 @@ import os
 import random
 import re
 import sys
-from itertools import combinations
+from itertools import permutations
 
 #
 # Complete the 'fairCut' function below.
@@ -16,26 +16,38 @@ from itertools import combinations
 #  2. INTEGER_ARRAY arr
 #
 
-def unfairness(arr, I, J, th=-1):
-    res = 0
-    for i in I:
-        for j in J:
-           res += abs(arr[i] - arr[j])
-           if th >= 0 and res > th:
-               return th
-    return res
-
-
 def fairCut(k, arr):
-    all_indices = set(range(len(arr)))
-    min_unfairness = -1
+    n = len(arr)
+    k = min(k, n - k)
+    arr = sorted(arr)  # make calculating abs easier
 
-    for c in combinations(all_indices, k):
-        I = set(c)
-        J = all_indices - I
-        u = unfairness(arr, I, J, min_unfairness)
-        min_unfairness = u if min_unfairness == -1 else min(min_unfairness, u)
-    return min_unfairness
+    # dp[i][j]: i-th number is processed, j = |I|
+    dp = [[float('inf')] * (n + 1) for _ in range(n + 1)]
+    dp[0][0] = 0
+
+    for i in range(n):
+        for j in range(i+1):
+            I_size = j
+            J_size = i - j
+
+            if I_size > k or J_size > (n - k):
+                continue
+
+            # (1) assign arr[i] to I
+            # Meaning, because arr[i] is ordered by ascending,
+            #   (arr[i] - arr[_]) where _ < |J|, (arr[_] - arr[i]) where |J| < _ < n-k
+            # = adding arr[i] from 1 to |J|, subtracting arr[i] for the rest
+            unfairness_I = dp[i][j] + arr[i] * J_size - arr[i] * ((n - k) - J_size)
+
+            # (2) assign arr[i] to J
+            #   (arr[i] - arr[_]) where _ < |I|, (arr[_] - arr[i]) where |I| < _ < k
+            # = adding arr[i] for |J|, subtracting arr[i] for the rest ((n-k) * |J|)
+            unfairness_J = dp[i][j] + arr[i] * I_size - arr[i] * (k - I_size)
+
+            dp[i+1][j+1] = min(dp[i+1][j+1], unfairness_I)
+            dp[i+1][j] = min(dp[i+1][j], unfairness_J)  # |I| doesn't change; j = j
+
+    return dp[n][k]
 
 
 if __name__ == '__main__':
